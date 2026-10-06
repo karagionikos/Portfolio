@@ -298,18 +298,19 @@
 
       //About Page
       about: [
-        "Hey there, I'm Nikos, a  4th-year student of  Applied Informatics",
-        "at the  University of  Macedonia.  I like  software  engineering,",
-        "data-driven problem-solving, emerging technologies and many more.",
-        "I enjoy working on both personal and team projects, whether thats", 
-        "through web development, algorithms, apps or AI-related.",
+        "Hey there,   I'm Nikos,   a  5th-year student  of   Applied Informatics",
+        "at  the  University  of  Macedonia.   Currently  an  engineering intern",
+        "working on  data pipeline for research into startups digital footprint.",
         " ",
-        "Through coursework and personal projects,I have gained experience",
-        "with programming languages,  tools and ways of modern development",
-        "frameworks.",
+        "I'm passionate about software engineering, data-driven problem-solving,",
+        "and emerging technologies.I enjoy projects merging design and practical",
+        "application  —  web dev,  algorithms, apps, AI,  and  LLM applications.",
         " ",
-        "I'm searching for opportunities to learn, grow, work with others,",
-        "and get hands-on experience.",
+        "Through coursework and personal projects, I have gained experience with",
+        "programming languages   and   tools  for modern development frameworks.",
+        " ",
+        "Curious, adaptable, and  a lifelong learner — looking for opportunities",
+        "to grow, collaborate, and help build innovative solutions.",
       ],
 
       //Skills Page
@@ -375,6 +376,11 @@
         "Currently Studying, Applied Informatics at University of Macedonia",
         "",
       ],
+
+      //Experience Page
+      experience: [
+        { role: "Engineer, Business Developer & Digital Marketing Intern", company: "Cruxivity", period: "Current" },
+      ],
     };
 
     /* Divider Line in Sections */
@@ -392,6 +398,7 @@
         { t: "indent", v: "contact" },
         { t: "indent", v: "projects" },
         { t: "indent", v: "education" },
+        { t: "indent", v: "experience" },
         { t: "orange", v: " ------------ " },
         { t: "indent", v: "resume" },
         { t: "indent", v: "date" },
@@ -436,6 +443,17 @@
         DIVIDER,
         ...data.education.map(v => ({ t: "", v })),
         { t: "", v: "" },
+      ],
+
+      /* Experience Command */
+      experience: () => [
+        { t: "orange", v: "[ EXPERIENCE ]" },
+        DIVIDER,
+        ...data.experience.flatMap(e => [
+          { t: "bold",   v: "> " + e.company + "  [" + e.period + "]" },
+          { t: "indent", v: e.role },
+          { t: "", v: "" },
+        ]),
       ],
 
       /* Contact Command */
