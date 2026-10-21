@@ -12,7 +12,7 @@ This is a personal portfolio.
 
 ## Author
 
-Nikolaos Karageorgis
+Nikos Karageorgis
 
 GitHub:
 https://github.com/karagionikos
