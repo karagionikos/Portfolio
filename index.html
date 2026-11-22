@@ -11,8 +11,8 @@
   <link rel="icon" type="image/png" href="favicon.ico">
   <link rel="apple-touch-icon" href="favicon.ico">
 
-  <!-- Courier Prime Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- JetBrains Mono Font -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
   <style>
     /*Removes Default Browser Spacing/Padding*/
@@ -26,22 +26,31 @@
     {
       --orange: #FF8000;
       --orange-dim: #cc6600;
-      --bg: #ffffff;
-      --fg: #1a1a1a;
-      --dim: #888888;
+      --bg: #0d0d0d;
+      --bar: #1a1a1a;
+      --line: #262626;
+      --fg: #e6e6e6;
+      --dim: #8a8a8a;
       --border: #FF8000;
-      --font: 'Courier Prime', Courier, monospace;
+      --glow: 0 0 6px #FF800099;
+      --font: 'JetBrains Mono', Consolas, monospace;
     }
 
     /* ===Page Layout=== */
-    html, body 
+    html, body
     {
       height: 100%;
-      background: #f0f0f0;
+      background: #080808;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--font); 
+      font-family: var(--font);
+    }
+
+    /* Faint orange glow behind the window (placeholder backdrop) */
+    body
+    {
+      background: radial-gradient(ellipse at center, #FF80001f 0%, transparent 60%), #080808;
     }
 
     /* ===Hover Effect=== */
@@ -60,29 +69,43 @@
       min-height: 92vh;
       background: var(--bg);
 
-      /* Orange Border */
-      border: 2px solid var(--orange);
+      /* Rounded Window */
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
 
       /* Vertical Layout */
       display: flex;
       flex-direction: column;
 
-      /* Retro Shadow */
-      box-shadow: 0 0 10px #FF800033, 0 0 20px #FF800022, 6px 6px 0 #FF800033;
+      /* Soft Drop Shadow */
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* CRT Scanlines Over the Window */
+    .window::after
+    {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px);
     }
 
      /* ===Top Title Bar=== */
-    .titlebar 
+    .titlebar
     {
-      background: var(--orange);
-      color: #fff;
-      padding: 5px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
+      background: var(--bar);
+      color: var(--dim);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 14px;
+      font-size: 12px;
+      letter-spacing: .04em;
       display: flex;
       align-items: center;
       gap: 8px;
+      position: relative;
 
       /* Prevent Text Selection */
       user-select: none;
@@ -91,15 +114,28 @@
       flex-shrink: 0;
     }
 
-    /* ===Small Fake Window Buttons=== */
-    .dot 
-    { 
-      width: 12px; 
-      height: 12px; 
-      border-radius: 50%; 
-      background: rgba(255,255,255,0.45); 
-      display: inline-block; 
+    /* Centered Window Title */
+    .title
+    {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      pointer-events: none;
     }
+
+    /* ===Small Fake Window Buttons=== */
+    .dot
+    {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot:nth-child(1) { background: #ff5f57; }
+    .dot:nth-child(2) { background: #febc2e; }
+    .dot:nth-child(3) { background: #28c840; }
 
     /* ===Terminal Output Screen=== */
     .screen 
@@ -115,19 +151,53 @@
     }
 
     /* Custom CMD Like Blinking Cursor */
-    .cursor 
+    .cursor
     {
       display: inline-block;
-      width: 5px;
+      width: 0.6em;
+      height: 1.15em;
       vertical-align: text-bottom;
       background: var(--orange);
+      box-shadow: var(--glow);
       margin-left: 3px;
       animation: blink 1.3s step-start infinite;
     }
     
-    @keyframes blink 
+    @keyframes blink
     {
       50% {opacity: 0;}
+    }
+
+    /* Phosphor Banner Entrance: rows flicker on independently, like a warming tube */
+    .power-on .line
+    {
+      animation: phosphor 600ms steps(1, end) both;
+    }
+
+    /* Offsets so neighbouring rows don't flicker in sync */
+    .power-on .line:nth-child(3n)   { animation-delay: 90ms; }
+    .power-on .line:nth-child(3n+1) { animation-delay: 20ms; }
+    .power-on .line:nth-child(3n+2) { animation-delay: 150ms; }
+
+    @keyframes phosphor
+    {
+      0%  { opacity: 0; }
+      20% { opacity: 1; }
+      35% { opacity: 0.25; }
+      50% { opacity: 1; }
+      70% { opacity: 0.6; }
+      85% { opacity: 1; }
+    }
+
+    /* No flicker for reduced motion, just a gentle fade */
+    @media (prefers-reduced-motion: reduce)
+    {
+      .power-on .line { animation: fade 400ms ease both; }
+    }
+
+    @keyframes fade
+    {
+      from { opacity: 0; }
     }
 
     /* ===Line Types=== */
@@ -139,10 +209,11 @@
     }
 
     /* Orange Highlighted Text */
-    .line.orange 
+    .line.orange
     {
       color: var(--orange);
       font-weight: 700;
+      text-shadow: var(--glow);
 
       /* Tight ASCII spacing */
       line-height: 0.9;
@@ -167,10 +238,11 @@
     }
 
     /* Orange Prompt Inside echo */
-    .line.echo .p 
+    .line.echo .p
     {
       color: var(--orange);
       font-weight: 700;
+      text-shadow: var(--glow);
     }
 
     /* Error Message Style */
@@ -186,15 +258,16 @@
       display: flex;
       align-items: center;
       padding: 9px 22px 14px;
-      border-top: 1px solid var(--orange);
+      border-top: 1px solid var(--line);
       flex-shrink: 0;
     }
 
     /* Terminal Prompt */
-    .prompt-sym 
+    .prompt-sym
     {
       color: var(--orange);
       font-weight: 700;
+      text-shadow: var(--glow);
       font-size: 14px;
       font-family: var(--font);
       white-space: nowrap;
@@ -219,7 +292,7 @@
     /* Placeholder Text */
     .cmd-input::placeholder 
     { 
-      color: #bbb; 
+      color: #555;
     }
 
     /* ===Mobile Responsiveness=== */
@@ -244,8 +317,8 @@
       <span class="dot"></span>
       <span class="dot"></span>
 
-      <!-- Fake Virtual Path -->
-      &nbsp;&nbsp;C:\USER\PORTFOLIO&gt;
+      <!-- Window Title -->
+      <span class="title">nikos — portfolio</span>
     </div>
 
     <!-- Terminal Output Area -->
@@ -257,8 +330,8 @@
 
       <!-- Prompt -->
       <span class="prompt-sym">
-        C:\USER\PORTFOLIO&gt;&nbsp;
-        <span class="cursor">|</span>
+        nikos@portfolio:~$&nbsp;
+        <span class="cursor"></span>
       </span>
 
       <!-- Command Input -->
@@ -514,15 +587,22 @@
         
         screen.appendChild(d);
         
+        // Speed 0 = print instantly
+        if (!speed)
+        {
+          d.textContent = v;
+          continue;
+        }
+
         // Type line character-by-character
         for (let i = 0; i < v.length; i++)
         {
           d.textContent += v[i];
           screen.scrollTop = screen.scrollHeight;
-          
+
           await sleep(speed);
         }
-        
+
         // Small pause between lines
         await sleep(20);
       }
@@ -580,10 +660,14 @@
         await sleep(ms);
       }
 
-      await addLines([{ t: "", v: "" }]);
-      
-      // Show actual banner
-      await addLines(getBanner(), 2);
+      // Wipe the boot log, then flicker the banner on
+      screen.innerHTML = '';
+      screen.classList.add('power-on');
+      await addLines(getBanner(), 0);
+      await sleep(800); // longest delay + duration (150ms + 600ms)
+
+      // Remove so later command output doesn't flicker too
+      screen.classList.remove('power-on');
 
       // Re-enable typing AFTER boot finishes
       input.disabled = false;
@@ -596,7 +680,7 @@
       const d = document.createElement('div');
 
       d.className = 'line echo';
-      d.innerHTML = '<span class="p">C:\\USER\\PORTFOLIO&gt; </span>' + esc(raw);
+      d.innerHTML = '<span class="p">nikos@portfolio:~$ </span>' + esc(raw);
 
       screen.appendChild(d);
     }
