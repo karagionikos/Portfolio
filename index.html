@@ -166,12 +166,6 @@
       padding-left: 20px;
     }
 
-    /* Command echo Styling */
-    .line.echo 
-    {
-      color: var(--fg);
-    }
-
     /* Orange Prompt Inside echo */
     .line.echo .p 
     {
@@ -194,7 +188,6 @@
       padding: 9px 22px 14px;
       border-top: 1px solid var(--orange);
       flex-shrink: 0;
-      gap: 0;
     }
 
     /* Terminal Prompt */
@@ -256,7 +249,7 @@
     </div>
 
     <!-- Terminal Output Area -->
-    <div class="screen" id="screen">
+    <div class="screen" id="screen" role="log" aria-live="polite">
     </div>
 
     <!-- Input Row -->
@@ -300,11 +293,11 @@
       about: [
         "Hey there,   I'm Nikos,   a  5th-year student  of   Applied Informatics",
         "at  the  University  of  Macedonia.   Currently  an  engineering intern",
-        "working on  data pipeline for research into startups digital footprint.",
+        "working  on  a  data pipeline researching startups'  digital footprint.",
         " ",
         "I'm passionate about software engineering, data-driven problem-solving,",
-        "and emerging technologies.I enjoy projects merging design and practical",
-        "application  —  web dev,  algorithms, apps, AI,  and  LLM applications.",
+        "and  emerging  technologies.   I  enjoy  projects  merging  design  and",
+        "practical use  —  web dev,  algorithms, apps, AI, and LLM applications.",
         " ",
         "Through coursework and personal projects, I have gained experience with",
         "programming languages   and   tools  for modern development frameworks.",
@@ -348,7 +341,7 @@
         { name: "Unity 3rd Person Movement & Camera", desc: "3rd person movement and camera — using the 'Character Controller' & 'Cinemachine'." },
         { name: "Classification Problem W/ Machine-Learning", desc: "Classification problem, solved W/ 8 different ML algorithms, presenting scores, graphs, and more." },
         { name: "Neural Networks in Computer Vision", desc: "Code using Deep Learning models for image classification, utilizing Transfer Learning." },
-        { name: "Coffe Machine Energy Prediction", desc: "Focuses on Non-Intrusive Load Monitoring. Implemented a Neural Network bult with Python" },
+        { name: "Coffee Machine Energy Prediction", desc: "Focuses on Non-Intrusive Load Monitoring. Implemented a Neural Network built with Python." },
       ],
 
       //Contact Page
@@ -387,6 +380,17 @@
     const DIVIDER = { t: "dim", v: "──────────────────────────────────────────" };
 
 
+    /* Titled Section of Plain Lines */
+    function section(title, lines)
+    {
+      return [
+        { t: "orange", v: `[ ${title} ]` },
+        DIVIDER,
+        ...lines.map(v => ({ t: "", v })),
+        { t: "", v: "" },
+      ];
+    }
+
     /* ===Command System=== */
     const COMMANDS = 
     {
@@ -411,20 +415,10 @@
       ],
 
       /* About Command */
-      about: () => [
-        { t: "orange", v: "[ ABOUT ]" },
-        DIVIDER,
-        ...data.about.map(v => ({ t: "", v })),
-        { t: "", v: "" },
-      ],
+      about: () => section("ABOUT", data.about),
 
       /* Skills Command */
-      skills: () => [
-        { t: "orange", v: "[ SKILLS ]" },
-        DIVIDER,
-        ...data.skills.map(v => ({ t: "", v })),
-        { t: "", v: "" },
-      ],
+      skills: () => section("SKILLS", data.skills),
 
       /* Projects Command */
       projects: () => [
@@ -438,12 +432,7 @@
       ],
 
       /* Education Command */
-      education: () => [
-        { t: "orange", v: "[ EDUCATION ]" },
-        DIVIDER,
-        ...data.education.map(v => ({ t: "", v })),
-        { t: "", v: "" },
-      ],
+      education: () => section("EDUCATION", data.education),
 
       /* Experience Command */
       experience: () => [
@@ -457,19 +446,14 @@
       ],
 
       /* Contact Command */
-      contact: () => {
-        renderContacts();
-        return null;
-      },
+      contact: () => renderContacts(),
 
       /* Show Starting Banner Command */
-      banner: () => { 
-        addLines(getBanner()); return null; 
-      },
+      banner: () => addLines(getBanner()),
 
       /* Clear Screen Command */
       clear:  () => { 
-        screen.innerHTML = ''; addLines(getBanner()); return null; 
+        screen.innerHTML = ''; return addLines(getBanner()); 
       },
 
       /* Date Command */
@@ -483,8 +467,7 @@
       {
         window.open("./CV.pdf", "_blank");
         
-        return 
-        [
+        return [
           { t: "dim", v: "[SYSTEM] Accessing resume file..." },
           { t: "orange", v: "Resume opened successfully." },
           { t: "", v: "" },
@@ -521,6 +504,9 @@
     /* ===Render Lines==== */
     async function addLines(lines, speed = 8)
     {
+      // Screen readers wait and read each finished block once, not per character
+      screen.setAttribute('aria-busy', 'true');
+
       for (const { t, v } of lines)
       {
         const d = document.createElement('div');
@@ -540,6 +526,8 @@
         // Small pause between lines
         await sleep(20);
       }
+
+      screen.setAttribute('aria-busy', 'false');
     }
 
     //Rendering Contacts
@@ -569,7 +557,7 @@
       await addLines([{ t: "", v: "" }]);
     }
 
-    /* Gradual Character Appearence */
+    /* Gradual Character Appearance */
     function sleep(ms)
     {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -581,34 +569,18 @@
       // Disable typing during boot
       input.disabled = true;
 
-      await addLines(
-      [
-        { t: "dim", v: "[SYSTEM] Initializing portfolio system..." },
-      ], 15);
-      
-      await sleep(400);
-      await addLines(
-      [
-        { t: "dim", v: "[SYSTEM] Loading portfolio modules..." },
-      ], 15);
-      
-      await sleep(300);
-      await addLines(
-      [
-        { t: "dim", v: "[SYSTEM] Establishing secure connection..." },
-      ], 15);
-      
-      await sleep(300);
-      await addLines(
-      [
-        { t: "dim", v: "[SYSTEM] STATUS: ONLINE." },
-      ], 15);
-      
-      await sleep(500);
-      await addLines(
-      [
-        { t: "", v: "" },
-      ]);
+      for (const [v, ms] of [
+        ["[SYSTEM] Initializing portfolio system...", 400],
+        ["[SYSTEM] Loading portfolio modules...", 300],
+        ["[SYSTEM] Establishing secure connection...", 300],
+        ["[SYSTEM] STATUS: ONLINE.", 500],
+      ])
+      {
+        await addLines([{ t: "dim", v }], 15);
+        await sleep(ms);
+      }
+
+      await addLines([{ t: "", v: "" }]);
       
       // Show actual banner
       await addLines(getBanner(), 2);
@@ -663,10 +635,10 @@
       echoCmd(raw.trim());
 
       // Check if Command Exists
-      if (cmd in COMMANDS) 
+      if (Object.hasOwn(COMMANDS, cmd)) 
       {
-        // Execute Command
-        const result = COMMANDS[cmd]();
+        // Execute Command (async ones resolve when their output is done)
+        const result = await COMMANDS[cmd]();
 
         // Render Result if Returned
         if (result)
@@ -678,12 +650,12 @@
       {
         // Smart Command Suggestions
         const commands = Object.keys(COMMANDS);
-        const suggestion = commands.find
-        (
-          c => c.startsWith(cmd[0])
-        );
+        // Suggest the command sharing the longest prefix with the input
+        const shared = c => { let i = 0; while (c[i] && c[i] === cmd[i]) i++; return i; };
+        const best = commands.reduce((a, c) => shared(c) > shared(a) ? c : a);
+        const suggestion = shared(best) ? best : null;
         
-        addLines(
+        await addLines(
         [
           { t: "err", v: `'${cmd}' is not recognized.` },
           
@@ -708,11 +680,12 @@
         // Clear input
         input.value = '';
 
-        // Run command
-        run(val);
+        // Run command, locked so outputs can't interleave
+        input.disabled = true;
+        run(val).finally(() => { input.disabled = false; input.focus(); });
       }
 
-      /* Tab Autocoplete */
+      /* Tab Autocomplete */
       else if (e.key === 'Tab')
       {
         e.preventDefault();
@@ -766,7 +739,7 @@
     /* ===Click Terminal to Focus=== */
     document
       .querySelector('.window')
-      .addEventListener('click', () => input.focus());
+      .addEventListener('click', () => { if (!getSelection().toString()) input.focus(); });
 
     /* ===Initialize Terminal=== */
     // Show Startup Banner
