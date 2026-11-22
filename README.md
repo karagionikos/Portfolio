@@ -39,7 +39,7 @@ This is a personal portfolio.
 
 ## Run locally
 
-It's a single static page — open `index.html` in a browser
+It's a single static page — open `index.html` in a browser.
 
 ## Author
 

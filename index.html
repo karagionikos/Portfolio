@@ -8,8 +8,7 @@
 
   <title>Portfolio</title>
 
-  <link rel="icon" type="image/png" href="favicon.ico">
-  <link rel="apple-touch-icon" href="favicon.ico">
+  <link rel="icon" href="favicon.ico">
 
   <!-- JetBrains Mono Font -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -25,13 +24,11 @@
     :root 
     {
       --orange: #FF8000;
-      --orange-dim: #cc6600;
       --bg: #0d0d0d;
       --bar: #1a1a1a;
       --line: #262626;
       --fg: #e6e6e6;
       --dim: #8a8a8a;
-      --border: #FF8000;
       --glow: 0 0 6px #FF800099;
       --font: 'JetBrains Mono', Consolas, monospace;
     }
@@ -47,16 +44,22 @@
       font-family: var(--font);
     }
 
-    /* Faint orange glow behind the window (placeholder backdrop) */
+    /* Faint orange glow behind the window */
     body
     {
       background: radial-gradient(ellipse at center, #FF80001f 0%, transparent 60%), #080808;
     }
 
-    /* ===Hover Effect=== */
-    a:hover 
+    /* ===Links (contact)=== */
+    .line a
     {
-      text-decoration: underline !important;
+      color: var(--orange);
+      text-decoration: none;
+    }
+
+    a:hover
+    {
+      text-decoration: underline;
       opacity: 0.8;
     }
 
@@ -66,7 +69,8 @@
       /* Responsive Width */
       width: min(860px, 98vw);
 
-      min-height: 92vh;
+      /* Fixed height so long output scrolls inside the window */
+      height: 92dvh;
       background: var(--bg);
 
       /* Rounded Window */
@@ -150,7 +154,7 @@
       padding-bottom: 40px;
     }
 
-    /* Custom CMD Like Blinking Cursor */
+    /* Blinking Block Cursor */
     .cursor
     {
       display: inline-block;
@@ -169,15 +173,15 @@
     }
 
     /* Phosphor Banner Entrance: rows flicker on independently, like a warming tube */
-    .power-on .line
+    .line.power-on
     {
       animation: phosphor 600ms steps(1, end) both;
     }
 
     /* Offsets so neighbouring rows don't flicker in sync */
-    .power-on .line:nth-child(3n)   { animation-delay: 90ms; }
-    .power-on .line:nth-child(3n+1) { animation-delay: 20ms; }
-    .power-on .line:nth-child(3n+2) { animation-delay: 150ms; }
+    .line.power-on:nth-child(3n)   { animation-delay: 90ms; }
+    .line.power-on:nth-child(3n+1) { animation-delay: 20ms; }
+    .line.power-on:nth-child(3n+2) { animation-delay: 150ms; }
 
     @keyframes phosphor
     {
@@ -189,10 +193,11 @@
       85% { opacity: 1; }
     }
 
-    /* No flicker for reduced motion, just a gentle fade */
+    /* Reduced motion: gentle fade instead of flicker, steady cursor */
     @media (prefers-reduced-motion: reduce)
     {
-      .power-on .line { animation: fade 400ms ease both; }
+      .line.power-on { animation: fade 400ms ease both; }
+      .cursor { animation: none; }
     }
 
     @keyframes fade
@@ -300,7 +305,10 @@
     {
       .screen    { font-size: 12px; padding: 14px 12px 6px; }
       .input-row { padding: 8px 12px 12px; }
-      .prompt-sym, .cmd-input { font-size: 12px; }
+      .prompt-sym { font-size: 12px; }
+
+      /* 16px stops iPhone Safari zooming in when the input is tapped */
+      .cmd-input  { font-size: 16px; }
     }
     
   </style>
@@ -352,6 +360,9 @@
     /* ===DOM References=== */
     const screen = document.getElementById('screen');
     const input  = document.getElementById('cmd');
+
+    // Prompt text lives once, in the HTML input row
+    const PROMPT = document.querySelector('.prompt-sym').textContent.trim();
 
     /* ===Site Data=== */
     const data = 
@@ -522,11 +533,11 @@
       contact: () => renderContacts(),
 
       /* Show Starting Banner Command */
-      banner: () => addLines(getBanner()),
+      banner: () => showBanner(),
 
       /* Clear Screen Command */
       clear:  () => { 
-        screen.innerHTML = ''; return addLines(getBanner()); 
+        screen.innerHTML = ''; return showBanner();
       },
 
       /* Date Command */
@@ -572,6 +583,15 @@
 
         { t: "", v: "" },
       ];
+    }
+
+    /* ===Banner Flickers On (Boot, clear, banner)=== */
+    async function showBanner()
+    {
+      // Flicker only the new banner lines, never older output
+      await addLines(getBanner().map(l => ({ ...l, t: l.t + ' power-on' })), 0);
+      screen.scrollTop = screen.scrollHeight;
+      await sleep(800); // longest delay + duration (150ms + 600ms)
     }
 
     /* ===Render Lines==== */
@@ -626,7 +646,7 @@
         
         d.className = 'line';
         
-        d.innerHTML = `<span style="color: var(--fg)"> ${item.label}: </span> <a href= "${item.href}" target= "_blank" style= "color: var(--orange); text-decoration: none;"> ${item.text} </a>`;
+        d.innerHTML = ` ${item.label}: <a href="${item.href}" target="_blank">${item.text}</a>`;
         
         screen.appendChild(d);
         screen.scrollTop = screen.scrollHeight;
@@ -637,7 +657,7 @@
       await addLines([{ t: "", v: "" }]);
     }
 
-    /* Gradual Character Appearance */
+    /* Wait ms Milliseconds */
     function sleep(ms)
     {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -662,12 +682,7 @@
 
       // Wipe the boot log, then flicker the banner on
       screen.innerHTML = '';
-      screen.classList.add('power-on');
-      await addLines(getBanner(), 0);
-      await sleep(800); // longest delay + duration (150ms + 600ms)
-
-      // Remove so later command output doesn't flicker too
-      screen.classList.remove('power-on');
+      await showBanner();
 
       // Re-enable typing AFTER boot finishes
       input.disabled = false;
@@ -680,7 +695,7 @@
       const d = document.createElement('div');
 
       d.className = 'line echo';
-      d.innerHTML = '<span class="p">nikos@portfolio:~$ </span>' + esc(raw);
+      d.innerHTML = '<span class="p">' + esc(PROMPT) + ' </span>' + esc(raw);
 
       screen.appendChild(d);
     }
@@ -741,11 +756,11 @@
         
         await addLines(
         [
-          { t: "err", v: `'${cmd}' is not recognized.` },
+          { t: "err", v: `'${raw.trim()}' is not recognized.` },
           
           suggestion
 
-          ? { t: "dim", v: `Did you mean '${suggestion}' ?` }: 
+          ? { t: "dim", v: `Did you mean '${suggestion}'?` }:
 
           { t: "dim", v: "Type help for available commands." },
           { t: "", v: "" },
